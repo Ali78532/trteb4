@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار</title>
+    <style>
+        body {
+            font-family: "Arial", sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            margin: 20px;
+            direction: rtl;
+        }
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #ffffff;
+        }
+        .words, .answer {
+            margin: 20px auto;
+            max-width: 600px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .word {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 18px;
+            background-color: #424242;
+            border: 1px solid #616161;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            color: #fff;
+        }
+        .word:hover {
+            background-color: #616161;
+            transform: scale(1.1);
+        }
+        .answer {
+            min-height: 50px;
+            border: 2px dashed #616161;
+            padding: 10px;
+            background-color: #1f1f1f;
+            border-radius: 5px;
+            justify-content: flex-start;
+            text-align: left;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 20px;
+            margin-bottom: 20px;
+			direction: ltr
+        }
+        .result.correct {
+            color: #90ff90; /* أخضر فاتح */
+        }
+        .result.incorrect {
+            color: #ff9999; /* أحمر فاتح */
+        }
+        .hidden {
+            display: none;
+        }
+        #score {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            display: none; /* إخفاء الدرجة بشكل افتراضي */
+        }
+
+        #check-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            color: white;
+        }
+
+        #check-btn:hover {
+            background-color: #45a049;
+        }
+#footer-text {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 20px;
+    color: #90caf9; /* لون أزرق فاتح */
+}
+    </style>
+</head>
+<body>
+    <h1>ترتيب جمل</h1>
+    <div class="question" id="time" style="direction: ltr;" ></div>
+    <div class="answer" id="answer" style="direction: ltr;"></div>
+    <div class="words" id="words"></div>
+    <div class="result" id="result"></div>
+    <button id="check-btn" onclick="checkAnswer()">تحقق من الإجابة</button>
+    <button id="next-btn" class="hidden" onclick="displayQuestion()">التالي</button>
+    <div id="score"></div>
+    <div id="footer-text"></div>
+    
+    <script>
+        const times = [
+		    { question: "", correct: "what colour is his hair ?", words: ["his", "colour", "what", "?", "is", "hair"] },
+		    { question: "", correct: "where does he live ?", words: ["he", "does", "?", "where", "live"] },
+		    { question: "", correct: "what does he wear ?", words: ["does", "wear", "what", "he", "?"] },
+		    { question: "", correct: "can he play football well ?", words: ["?", "football", "play", "well", "he", "can"] },
+		    { question: "", correct: "is he good at science and maths ?", words: ["he", "?", "is", "science", "good", "at", "and", "maths"] }
+        ];
+
+        let currentQuestion = -1;
+        let selectedWords = [];
+        let usedQuestions = new Set();
+        let score = 0;
+
+function getNextQuestion() {
+if (usedQuestions.size === times.length) {
+    document.getElementById("result").textContent = "لقد انتهيت من جميع الأسئلة!";
+    document.getElementById("result").className = "result correct";
+    document.getElementById("words").innerHTML = "";
+    document.getElementById("answer").innerHTML = "";
+    document.getElementById("time").textContent = ""; // تأكد من تصحيح هذه العبارة
+    document.getElementById("check-btn").classList.add("hidden");
+    document.getElementById("next-btn").classList.add("hidden");
+
+    document.getElementById("score").textContent = `درجتك: ${score}`;
+    document.getElementById("score").style.display = "block";
+
+    document.getElementById("footer-text").textContent = "إعداد الأستاذ: علي حسين";
+
+    return null;
+}
+
+    do {
+        currentQuestion = Math.floor(Math.random() * times.length);
+    } while (usedQuestions.has(currentQuestion));
+    usedQuestions.add(currentQuestion);
+    return times[currentQuestion];
+}
+
+function displayQuestion() {
+    const question = getNextQuestion();
+    if (!question) return;
+
+    document.getElementById("time").innerHTML = question.question;
+    document.getElementById("answer").textContent = "";
+    document.getElementById("words").innerHTML = "";
+
+    selectedWords = [];
+    shuffleArray(question.words).forEach((word, index) => {
+        const wordElement = document.createElement("span");
+        wordElement.textContent = word;
+        wordElement.className = "word";
+        wordElement.onclick = () => selectWord(wordElement, index);
+        document.getElementById("words").appendChild(wordElement);
+    });
+
+    document.getElementById("result").textContent = "";
+    document.getElementById("check-btn").classList.remove("hidden");
+    document.getElementById("next-btn").classList.add("hidden");
+}
+
+        function selectWord(wordElement, index) {
+            const word = wordElement.textContent;
+            if (selectedWords.includes(index)) {
+                selectedWords.splice(selectedWords.indexOf(index), 1);
+                wordElement.style.backgroundColor = "#424242";
+                wordElement.style.cursor = "pointer";
+            } else {
+                selectedWords.push(index);
+                wordElement.style.backgroundColor = "#5555bb";
+                wordElement.style.cursor = "not-allowed";
+            }
+            updateAnswer();
+        }
+
+        function updateAnswer() {
+            const question = times[currentQuestion];
+            const answer = selectedWords.map(i => question.words[i]).join(" ");
+            document.getElementById("answer").textContent = answer;
+        }
+
+    function checkAnswer() {
+        const question = times[currentQuestion];
+        const userAnswer = selectedWords.map(i => question.words[i]).join(" ");
+        const correctSound = new Audio("Sounds/Correct.wav");
+        const wrongSound = new Audio("Sounds/Wrong.wav");
+
+        if (userAnswer === question.correct) {
+            document.getElementById("result").textContent = "إجابتك صحيحة! احسنت.";
+            document.getElementById("result").className = "result correct";
+            score += 2;
+            correctSound.play(); // تشغيل صوت الإجابة الصحيحة
+        } else {
+            document.getElementById("result").innerHTML = `إجابتك خاطئة. الإجابة الصحيحة هي<br>${question.correct}`;
+            document.getElementById("result").className = "result incorrect";
+            wrongSound.play(); // تشغيل صوت الإجابة الخاطئة
+        }
+
+        document.getElementById("check-btn").classList.add("hidden");
+        document.getElementById("next-btn").classList.remove("hidden");
+    }
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        displayQuestion();
+    // معالج الأحداث عند النقر على حقل الإجابة
+    document.getElementById("answer").addEventListener("click", () => {
+        // تفريغ النص من الحقل
+        document.getElementById("answer").textContent = "";
+        
+        // إعادة تعيين الألوان الافتراضية لجميع الأزرار
+        const wordElements = document.querySelectorAll(".word");
+        wordElements.forEach(word => {
+            word.style.backgroundColor = "#424242";
+            word.style.cursor = "pointer";
+        });
+
+        // إعادة تعيين الكلمات المختارة
+        selectedWords = [];
+    });
+    </script>
+
+</body>
+</html>
